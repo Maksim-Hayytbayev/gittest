@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>MAIN</h1>
+    
+    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. 
+        Eligendi laboriosam eum rerum cumque cupiditate beatae quo 
+        odio sunt magnam facilis fugit culpa temporibus ex fugiat, 
+        animi dolor aspernatur rem. Nobis velit ipsa excepturi obcaecati 
+        error repudiandae laboriosam,
+        placeat quas. Eum quas inventore laborum soluta iste, 
+        quis architecto dolorum? Quaerat, nisi.</p>
+</body>
+</html>
+// 1. Инициализация проекта и установка зависимостей
+// В терминале выполните:
+// mkdir server && cd server
+// npm init -y
+// npm install express cors dotenv mysql2 sequelize sequelize-cli multer
+
+// 2. Создание структуры проекта
+// /server
+//   ├── config
+//   ├── migrations
+//   ├── models
+//   ├── routers
+//   ├── tests
+//   ├── .env
+//   ├── server.js
+
+// 3. Настройка базы данных
+// Создайте файл /server/config/database.js
+const { Sequelize } = require('sequelize');
+require('dotenv').config();
+
+const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASS, {
+  host: process.env.DB_HOST,
+  dialect: 'mysql',
+});
+
+module.exports = sequelize;
+
+// 4. Создание модели для файлов (models/Slide.js)
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
+
+const Slide = sequelize.define('Slide', {
+  id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  },
+  filename: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  startDate: {
+    type: DataTypes.DATE,
+    allowNull: false,
+  },
+  endDate: {
+    type: DataTypes.DATE,
+    allowNull: false,
+  },
+});
+
+module.exports = Slide;
+
+// 5. Создание API роутера (routers/slideRouter.js)
+const express = require('express');
+const Slide = require('../models/Slide');
+const router = express.Router();
+
+// Получение всех слайдов
+router.get('/', async (req, res) => {
+  try {
+    const slides = await Slide.findAll();
+    res.json(slides);
+  } catch (error) {
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
+module.exports = router;
+
+// 6. Основной серверный файл (server.js)
+const express = require('express');
+const cors = require('cors');
+const dotenv = require('dotenv');
+const sequelize = require('./config/database');
+const slideRouter = require('./routers/slideRouter');
+
+dotenv.config();
+const app = express();
+app.use(cors());
+app.use(express.json());
+app.use('/api/slides', slideRouter);
+
+sequelize.sync()
+  .then(() => console.log('База данных синхронизирована'))
+  .catch(err => console.error('Ошибка подключения к БД:', err));
+
+app.listen(5000, () => {
+  console.log('Сервер запущен на порту 5000');
+});

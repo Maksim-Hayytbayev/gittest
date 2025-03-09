@@ -1,3 +1,58 @@
+const express = require('express')
+const app = express()
+
+app.get('/', (req, res)=>{
+    res.sendFile(__dirname + '/first.html')
+})
+
+app.get('/about', (req,res)=>{
+    res.send('sometext about')
+})
+
+app.get('/user/:username/:id', (req,res)=>{
+    res.send(`User ID: ${req.params.id}. Username ${req.params.username}`)
+})
+
+const PORT = 3001;
+
+app.listen(PORT, ()=>{
+    console.log(`Server started:  http://${PORT}`);
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*
 const my_math = require('./my_math');
 
@@ -33,7 +88,7 @@ fs.unlink('./text-file/some.txt', ()=>{
 });
 */
 
-
+/*
 const http = require('http')
 const fs = require('fs')
 
@@ -48,7 +103,7 @@ let server = http.createServer((req, res)=>{
     res.writeHead(200,{'Content-Type':'text/html; charset=utf-8'})
     const stream = fs.createReadStream('./templates/index.html')
     stream.pipe(res)
-    */
+    
    res.writeHead(200,{'Content-Type':'text/html; charset=utf-8'})
 
    if(req.url =='/')
@@ -66,6 +121,6 @@ server.listen(PORT, HOST, ()=>{
     console.log(`Server started:  http:${PORT}:${HOST}`);
 })
 
+*/
 
-//console.log(currencyConverter);
 

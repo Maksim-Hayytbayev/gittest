@@ -1,0 +1,142 @@
+
+1. Тест базы данных (databaseTest.js)
+Проверяет подключение к MySQL через Sequelize.
+
+javascript
+Копировать
+Редактировать
+const { Sequelize } = require('sequelize');
+require('dotenv').config();
+
+// Подключение к базе данных
+const sequelize = new Sequelize(
+    process.env.DB_NAME,
+    process.env.DB_USER,
+    process.env.DB_PASS,
+    {
+        host: process.env.DB_HOST,
+        dialect: 'mysql',
+    }
+);
+
+// Проверка соединения
+async function testDatabaseConnection() {
+    try {
+        await sequelize.authenticate();
+        console.log("✅ Успешное подключение к базе данных.");
+    } catch (error) {
+        console.error("❌ Ошибка подключения к базе данных:", error);
+    } finally {
+        await sequelize.close();
+    }
+}
+
+testDatabaseConnection();
+Запуск:
+
+bash
+Копировать
+Редактировать
+node tests/databaseTest.js
+2. Тест модели Slide (slideModelTest.js)
+Создаёт тестовый слайд, проверяет его, затем удаляет.
+
+javascript
+Копировать
+Редактировать
+const { Sequelize, DataTypes } = require('sequelize');
+require('dotenv').config();
+
+// Подключение к базе данных
+const sequelize = new Sequelize(
+    process.env.DB_NAME,
+    process.env.DB_USER,
+    process.env.DB_PASS,
+    {
+        host: process.env.DB_HOST,
+        dialect: 'mysql',
+    }
+);
+
+// Определение модели Slide
+const Slide = sequelize.define('Slide', {
+    title: { type: DataTypes.STRING, allowNull: false },
+    filePath: { type: DataTypes.STRING, allowNull: false },
+    startDate: { type: DataTypes.DATE, allowNull: false },
+    endDate: { type: DataTypes.DATE, allowNull: false },
+});
+
+// Функция тестирования модели
+async function testSlideModel() {
+    try {
+        await sequelize.sync();
+
+        // Создание тестового слайда
+        const slide = await Slide.create({
+            title: "Test Slide",
+            filePath: "/uploads/test.pdf",
+            startDate: new Date(),
+            endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        });
+
+        console.log("✅ Тестовый слайд успешно создан:", slide.toJSON());
+
+        // Удаление тестового слайда
+        await slide.destroy();
+        console.log("✅ Тестовый слайд успешно удалён.");
+    } catch (error) {
+        console.error("❌ Ошибка в модели Slide:", error);
+    } finally {
+        await sequelize.close();
+    }
+}
+
+testSlideModel();
+Запуск:
+
+bash
+Копировать
+Редактировать
+node tests/slideModelTest.js
+3. Тест API /api/slides (slideApiTest.js)
+Использует Supertest и Jest для тестирования API.
+
+📌 Перед запуском установите зависимости:
+
+bash
+Копировать
+Редактировать
+npm install --save-dev jest supertest
+Код:
+
+javascript
+Копировать
+Редактировать
+const request = require('supertest');
+const express = require('express');
+const router = require('../routers/slideRouter'); // Убедитесь, что путь верный
+
+const app = express();
+app.use('/api/slides', router);
+
+test("✅ Должен вернуть массив слайдов", async () => {
+    const response = await request(app).get('/api/slides');
+    expect(response.status).toBe(200);
+    expect(Array.isArray(response.body)).toBe(true);
+});
+Добавьте в package.json:
+
+json
+Копировать
+Редактировать
+"scripts": {
+  "test": "jest"
+}
+Запуск теста:
+
+bash
+Копировать
+Редактировать
+npm test
+Теперь у вас есть тесты для базы данных, модели Slide и API /api/slides. 🚀
+Попробуйте их запустить и дайте знать, если есть ошибки! 😊
